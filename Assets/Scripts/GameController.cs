@@ -27,12 +27,21 @@ public class GameController : MonoBehaviour
     public GameObject pixel, matrixObject; 
     private static PixelController[,] matrix;
     private static List<GameObject> selectedPixels = new List<GameObject>();
+    private static int BSplineParameter = 3;
 
     private const int WIDTH = 192, HEIGHT = 144;
 
     private void Awake()
     {
         FillMatrix(WIDTH, HEIGHT);
+        EventManager.OnBSplineParameterChanged += ChangeBSplineParameter;
+        EventManager.SendBSplineParameterChanged(3);
+    }
+
+    private void ChangeBSplineParameter(int newParam)
+    {
+        BSplineParameter = newParam;
+        Debug.Log("New BSpline parameter = " + newParam.ToString());
     }
 
     private void FillMatrix(int width, int height)
@@ -112,6 +121,34 @@ public class GameController : MonoBehaviour
                 {
                     DrawHyperbola(x1, y1, a, b);
                     Debug.Log("Hyperbola with center in " + x1.ToString() + ";" + y1.ToString() + ", a = " + a.ToString() + ", b =" + b.ToString());
+                }
+                selectedPixels.Clear();
+            }
+        }
+        if (mode >= Mode.Hermite && mode <= Mode.Bezier)
+        {
+            if (selectedPixels.Count < 4)
+            {
+                selectedPixels.Add(selected_pixel);
+                selected_pixel.GetComponent<PixelController>().ChangeColor(255, true);
+            }
+            if (selectedPixels.Count == 4)
+            {
+                int x1, x2, y1, y2, x3, y3, x4, y4;
+                x1 = selectedPixels[0].GetComponent<PixelController>().x;
+                x2 = selectedPixels[1].GetComponent<PixelController>().x;
+                x3 = selectedPixels[2].GetComponent<PixelController>().x;
+                x4 = selectedPixels[3].GetComponent<PixelController>().x;
+                y1 = selectedPixels[0].GetComponent<PixelController>().y;
+                y2 = selectedPixels[1].GetComponent<PixelController>().y;
+                y3 = selectedPixels[2].GetComponent<PixelController>().y;
+                y4 = selectedPixels[3].GetComponent<PixelController>().y;
+
+                ClearSelectedPixels();
+                if (mode == Mode.Hermite)
+                {
+                    DrawHermite(x1, y1, x2, y2, x3, y3, x4, y4);
+                    Debug.Log($"Drawing Hermite: p1 = ({x1};{y1}); p2 = ({x2};{y2}); p3 = ({x3};{y3}); p4 = ({x4};{y4});");
                 }
                 selectedPixels.Clear();
             }
@@ -386,13 +423,6 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private static int FindRadius(int x1, int y1, int x2, int y2)
-    {
-        float max = Mathf.Max(Mathf.Abs(x2 - x1), Mathf.Abs(y2 - y1));
-        float min = Mathf.Min(Mathf.Abs(x2 - x1), Mathf.Abs(y2 - y1));
-        return System.Convert.ToInt32(Mathf.Sqrt(Mathf.Pow(max, 2) + Mathf.Pow(min, 2)));
-    }
-
     private static void DrawCirclePixels(int x0, int y0, int dx, int dy)
     {
         Plot(dx  + x0, dy  + y0);
@@ -409,10 +439,48 @@ public class GameController : MonoBehaviour
 
     private static void DrawHermite(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
     {
+        int i = 0;
+        float t = 0.0f;
+        float step = 0.01f;
 
+        int[,] a = new int[4, 4] 
+        { 
+            {2, -2, 1, 1},
+            {-3, 3, -2, -1},
+            {0, 0, 1, 0},
+            {1, 0, 0, 0}
+        };
+        int[,] b = new int[4, 2]
+        {
+            {x1, y1},
+            {x4, y4},
+            {x3 - x1, y3 - y1},
+            {x4 - x2, y4 - y2}
+        };
+
+        int[,] c = MatrixOps.Multiply(a, b);
+
+        while (t <= 1) {
+            float[,] tMatrix = new float[1, 4] { { t * t * t, t * t, t, 1f } };
+            float[,] r = MatrixOps.MultiplyDouble(tMatrix, c);
+            
+            Debug.Log(r.Length);
+            float x = r[0, 0];
+            float y = r[0, 1];
+            Plot(Convert.ToInt32(x), Convert.ToInt32(y));
+            t += step;
+            i++;
+        }
     }
 
 // UTILITY FUNCTIONS
+
+    private static int FindRadius(int x1, int y1, int x2, int y2)
+    {
+        float max = Mathf.Max(Mathf.Abs(x2 - x1), Mathf.Abs(y2 - y1));
+        float min = Mathf.Min(Mathf.Abs(x2 - x1), Mathf.Abs(y2 - y1));
+        return System.Convert.ToInt32(Mathf.Sqrt(Mathf.Pow(max, 2) + Mathf.Pow(min, 2)));
+    }
 
     public static void ClearSelectedPixels()
     {

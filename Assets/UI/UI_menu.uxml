@@ -29,7 +29,7 @@
                     </ui:VisualElement>
                     <ui:VisualElement name="bottom_row" style="flex-grow: 1; height: 10%; width: 100%; align-items: flex-start; justify-content: center; flex-direction: row;">
                         <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="bspline_mode" text="B-Spline" class="MainMenuButton" />
-                        <ui:TextField picking-mode="Ignore" value="3" style="width: 30%; height: 50%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
+                        <ui:TextField picking-mode="Ignore" value="3" name="txtBoxBezierParameter" style="width: 30%; height: 50%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="deselect" class="section" style="flex-grow: 1; align-items: center; justify-content: space-around; flex-direction: row;">

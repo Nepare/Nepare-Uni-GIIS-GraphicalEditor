@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,6 +27,8 @@ public class UIController : MonoBehaviour
         Button btnClearScreen = root.Q<Button>("clear_screen");
         Button btnReset = root.Q<Button>("reset_mode");
 
+        TextField txtBoxBezierParameter = root.Q<TextField>("txtBoxBezierParameter");
+
         btnCDA.clicked += SelectCDA;
         btnBresenham.clicked += SelectBresenham;
         btnWu.clicked += SelectWu;
@@ -39,6 +42,13 @@ public class UIController : MonoBehaviour
 
         btnReset.clicked += Reset;
         btnClearScreen.clicked += ClearScreen;
+
+        txtBoxBezierParameter.RegisterValueChangedCallback(evt => 
+        {
+            try { Convert.ToInt32(txtBoxBezierParameter.value); }
+            catch { return; }
+            EventManager.SendBSplineParameterChanged(Convert.ToInt32(txtBoxBezierParameter.value));
+        });
     }
 
     void Update()
