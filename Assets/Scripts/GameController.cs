@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour
     public GameObject pixel, matrixObject; 
     private static PixelController[,] matrix;
     private static List<GameObject> selectedPixels = new List<GameObject>();
-    private static int BSplineParameter = 3;
+    private static int BSplineParameter = 4;
 
     private const int WIDTH = 192, HEIGHT = 144;
 
@@ -35,7 +35,7 @@ public class GameController : MonoBehaviour
     {
         FillMatrix(WIDTH, HEIGHT);
         EventManager.OnBSplineParameterChanged += ChangeBSplineParameter;
-        EventManager.SendBSplineParameterChanged(3);
+        EventManager.SendBSplineParameterChanged(4);
     }
 
     private void ChangeBSplineParameter(int newParam)
@@ -150,6 +150,33 @@ public class GameController : MonoBehaviour
                     DrawHermite(x1, y1, x2, y2, x3, y3, x4, y4);
                     Debug.Log($"Drawing Hermite: p1 = ({x1};{y1}); p2 = ({x2};{y2}); p3 = ({x3};{y3}); p4 = ({x4};{y4});");
                 }
+                if (mode == Mode.Bezier)
+                {
+                    DrawBezier(x1, y1, x2, y2, x3, y3, x4, y4);
+                    Debug.Log($"Drawing Bezier: p1 = ({x1};{y1}); p2 = ({x2};{y2}); p3 = ({x3};{y3}); p4 = ({x4};{y4});");
+                }
+                selectedPixels.Clear();
+            }
+        }
+        if (mode == Mode.Bspline)
+        {
+            if (selectedPixels.Count < BSplineParameter)
+            {
+                selectedPixels.Add(selected_pixel);
+                selected_pixel.GetComponent<PixelController>().ChangeColor(255, true);
+            }
+            if (selectedPixels.Count == BSplineParameter)
+            {
+                int[] x_arr = new int[BSplineParameter];
+                int[] y_arr = new int[BSplineParameter];
+                for (int i = 0; i < BSplineParameter; i++)
+                {
+                    x_arr[i] = selectedPixels[i].GetComponent<PixelController>().x;
+                    y_arr[i] = selectedPixels[i].GetComponent<PixelController>().y;
+                }
+                ClearSelectedPixels();
+                DrawBSpline(x_arr, y_arr);
+                Debug.Log("Drawing BSpline!");
                 selectedPixels.Clear();
             }
         }
@@ -445,10 +472,10 @@ public class GameController : MonoBehaviour
 
         int[,] a = new int[4, 4] 
         { 
-            {2, -2, 1, 1},
-            {-3, 3, -2, -1},
-            {0, 0, 1, 0},
-            {1, 0, 0, 0}
+            { 2, -2,  1,  1},
+            {-3,  3, -2, -1},
+            { 0,  0,  1,  0},
+            { 1,  0,  0,  0}
         };
         int[,] b = new int[4, 2]
         {
@@ -469,6 +496,85 @@ public class GameController : MonoBehaviour
             float y = r[0, 1];
             Plot(Convert.ToInt32(x), Convert.ToInt32(y));
             t += step;
+            i++;
+        }
+    }
+
+    private static void DrawBezier(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
+    {
+        int i = 0;
+        float t = 0.0f;
+        float step = 0.005f;
+
+        int[,] a = new int[4, 4] 
+        { 
+            {-1,  3, -3,  1},
+            { 3, -6,  3, -0},
+            {-3,  3,  0,  0},
+            { 1,  0,  0,  0}
+        };
+        int[,] b = new int[4, 2]
+        {
+            {x1, y1},
+            {x2, y2},
+            {x3, y3},
+            {x4, y4}
+        };
+
+        int[,] c = MatrixOps.Multiply(a, b);
+
+        while (t <= 1) {
+            float[,] tMatrix = new float[1, 4] { { t * t * t, t * t, t, 1f } };
+            float[,] r = MatrixOps.MultiplyDouble(tMatrix, c);
+            
+            Debug.Log(r.Length);
+            float x = r[0, 0];
+            float y = r[0, 1];
+            Plot(Convert.ToInt32(x), Convert.ToInt32(y));
+            t += step;
+            i++;
+        }
+    }
+
+    private static void DrawBSpline(int[] x_arr, int[] y_arr)
+    {
+        int n = x_arr.Length;
+        Debug.Log(x_arr.Length);
+
+        int k = 0;
+        float step = 0.01f;
+
+        int[,] a = new int[4, 4] 
+        { 
+            {-1,  3, -3,  1},
+            { 3, -6,  3, -0},
+            {-3,  0,  3,  0},
+            { 1,  4,  1,  0}
+        };
+
+        int i = 1;
+        while (i <= n-3) {
+            int[,] b = new int[4, 2] 
+            { 
+                {x_arr[i-1],  y_arr[i-1]},
+                {x_arr[i],    y_arr[i]},
+                {x_arr[i+1],  y_arr[i+1]},
+                {x_arr[i+2],  y_arr[i+2]}
+            };
+
+            int[,] c = MatrixOps.Multiply(a, b);
+            float t = 0.0f;
+            while (t <= 1) {
+                float[,] tMatrix = new float[1, 4] { { t * t * t, t * t, t, 1f } };
+                float[,] r = MatrixOps.MultiplyDouble(tMatrix, c);
+                
+                Debug.Log(r.Length);
+                float x = r[0, 0] / 6;
+                float y = r[0, 1] / 6;
+                Plot(Convert.ToInt32(x), Convert.ToInt32(y));
+                t += step;
+                k++;
+            }
             i++;
         }
     }
