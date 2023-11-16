@@ -8,6 +8,8 @@ public class UIController : MonoBehaviour
 {
     private VisualElement root;
     private Label coordinates_label;
+    private bool is3DActive = false;
+    private int x = 0, y = 0, z = 0;
 
     private void OnEnable() {
         root = GetComponent<UIDocument>().rootVisualElement;
@@ -23,11 +25,23 @@ public class UIController : MonoBehaviour
         Button btnHermite = root.Q<Button>("hermite_mode");
         Button btnBezier = root.Q<Button>("bezier_mode");
         Button btnBSpline = root.Q<Button>("bspline_mode");
+        Button btnSpawnCube = root.Q<Button>("spawn_cube");
+        
+        Button btnRotate = root.Q<Button>("Rotate");
+        Button btnMove = root.Q<Button>("Move");
+        Button btnScale = root.Q<Button>("Scale");
+        Button btnPerspect = root.Q<Button>("Perspect");
+        Button btnReflect = root.Q<Button>("Reflect");
+
 
         Button btnClearScreen = root.Q<Button>("clear_screen");
         Button btnReset = root.Q<Button>("reset_mode");
 
         TextField txtBoxBezierParameter = root.Q<TextField>("txtBoxBezierParameter");
+
+        TextField txtBoxX = root.Q<TextField>("txtboxX");
+        TextField txtBoxY = root.Q<TextField>("txtboxY");
+        TextField txtBoxZ = root.Q<TextField>("txtboxZ");
 
         btnCDA.clicked += SelectCDA;
         btnBresenham.clicked += SelectBresenham;
@@ -39,7 +53,14 @@ public class UIController : MonoBehaviour
         btnHermite.clicked += SelectHermite;
         btnBezier.clicked += SelectBezier;
         btnBSpline.clicked += SelectBSpline;
-
+        
+        btnSpawnCube.clicked += SpawnCube;
+        btnMove.clicked += MoveCube;
+        btnRotate.clicked += RotateCube;
+        btnScale.clicked += ScaleCube;
+        btnPerspect.clicked += PerspectCube;
+        btnReflect.clicked += ReflectCube;
+        
         btnReset.clicked += Reset;
         btnClearScreen.clicked += ClearScreen;
 
@@ -47,8 +68,19 @@ public class UIController : MonoBehaviour
         {
             try { Convert.ToInt32(txtBoxBezierParameter.value); }
             catch { return; }
-            EventManager.SendBSplineParameterChanged(Convert.ToInt32(txtBoxBezierParameter.value));
+            if (Convert.ToInt32(txtBoxBezierParameter.value) >= 4)
+                EventManager.SendBSplineParameterChanged(Convert.ToInt32(txtBoxBezierParameter.value));
         });
+
+        txtBoxX.RegisterValueChangedCallback(evt => 
+        {   try { Convert.ToInt32(txtBoxX.value); } catch { x = 0; return; }
+            x = Convert.ToInt32(txtBoxX.value); });
+        txtBoxY.RegisterValueChangedCallback(evt => 
+        {   try { Convert.ToInt32(txtBoxY.value); } catch { y = 0; return; }
+            y = Convert.ToInt32(txtBoxY.value); });
+        txtBoxZ.RegisterValueChangedCallback(evt => 
+        {   try { Convert.ToInt32(txtBoxZ.value); } catch { z = 0; return; }
+            z = Convert.ToInt32(txtBoxZ.value); });
     }
 
     void Update()
@@ -123,9 +155,60 @@ public class UIController : MonoBehaviour
         GameController.mode = GameController.Mode.Bspline;
     }
 
+    private void SpawnCube()
+    {
+        Reset3D();
+        ClearScreen();
+        is3DActive = true;
+        GameController.SpawnCube();
+    }
+
+    private void MoveCube()
+    {
+        ClearScreen();
+        GameController.SendValues(true, false, false, false, false, x, y, z);
+        GameController.RenderCube();
+    }
+
+    private void RotateCube()
+    {
+        ClearScreen();
+        GameController.SendValues(false, true, false, false, false, x, y, z);
+        GameController.RenderCube();
+    }
+
+    private void ScaleCube()
+    {
+        ClearScreen();
+        GameController.SendValues(false, false, true, false, false, x, y, z);
+        GameController.RenderCube();
+    }
+
+    private void PerspectCube()
+    {
+        ClearScreen();
+        GameController.SendValues(false, false, false, true, false, x, y, z);
+        GameController.RenderCube();
+    }
+
+    private void ReflectCube()
+    {
+        ClearScreen();
+        GameController.SendValues(false, false, false, false, true, x, y, z);
+        GameController.RenderCube();
+    }
+
     private void Reset()
     {
         GameController.mode = GameController.Mode.None;
+        is3DActive = false;
+        GameController.ClearSelectedPixels();
+    }
+
+    private void Reset3D()
+    {
+        GameController.mode = GameController.Mode.None;
+        x = 0; y = 0; z = 0;
         GameController.ClearSelectedPixels();
     }
 

@@ -32,9 +32,30 @@
                         <ui:TextField picking-mode="Ignore" value="4" name="txtBoxBezierParameter" style="width: 30%; height: 50%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="deselect" class="section" style="flex-grow: 1; align-items: center; justify-content: space-around; flex-direction: row;">
-                    <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="reset_mode" text="Reset Mode" class="MainMenuButton" />
-                    <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="clear_screen" text="Clear Screen" class="MainMenuButton" style="border-left-color: rgb(241, 73, 21); border-right-color: rgb(241, 73, 21); border-top-color: rgb(241, 73, 21); border-bottom-color: rgb(241, 73, 21);" />
+                <ui:VisualElement name="cube_manipulation" class="section" style="flex-grow: 1; height: 12%; flex-direction: column; justify-content: flex-start; align-items: flex-start;">
+                    <ui:VisualElement name="top_row" style="flex-grow: 1; height: 10%; width: 100%; flex-direction: row; justify-content: space-around; align-items: flex-end;">
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Rotate" text="Rotate" class="MainMenuButton" style="font-size: 14px; width: 30%;" />
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Move" text="Move" class="MainMenuButton" style="font-size: 14px; width: 30%;" />
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Scale" text="Scale" class="MainMenuButton" style="font-size: 14px; width: 30%;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="central_row" style="flex-grow: 1; height: 10%; width: 100%; flex-direction: row; justify-content: space-around; align-items: stretch; -unity-text-align: upper-left;">
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Perspect" text="Perspect" class="MainMenuButton" style="font-size: 14px; width: 35%; justify-content: space-between;" />
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Reflect" text="Reflect" class="MainMenuButton" style="font-size: 14px; width: 35%;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="bottom_row" style="flex-grow: 1; height: 10%; width: 100%; flex-direction: row; justify-content: space-around; align-items: flex-start;">
+                        <ui:TextField picking-mode="Ignore" value="0" name="txtboxX" style="width: 25%; height: 75%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
+                        <ui:TextField picking-mode="Ignore" value="0" name="txtboxY" style="width: 25%; height: 75%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
+                        <ui:TextField picking-mode="Ignore" value="0" name="txtboxZ" style="width: 25%; height: 75%; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; border-left-color: rgb(241, 150, 21); border-right-color: rgb(241, 150, 21); border-top-color: rgb(241, 150, 21); border-bottom-color: rgb(241, 150, 21); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; -unity-text-align: middle-center;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="deselect" class="section" style="flex-grow: 1; align-items: center; justify-content: space-around; flex-direction: column; height: 12%;">
+                    <ui:VisualElement name="top_row" style="flex-grow: 1; height: 10%; width: 100%; flex-direction: row; justify-content: space-around; align-items: flex-end;">
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="spawn_cube" text="Spawn cube" class="MainMenuButton" style="border-left-color: rgb(21, 241, 63); border-right-color: rgb(21, 241, 63); border-top-color: rgb(21, 241, 63); border-bottom-color: rgb(21, 241, 63);" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="bottom_row" style="flex-grow: 1; height: 10%; width: 100%; flex-direction: row; justify-content: space-around; align-items: flex-start;">
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="reset_mode" text="Reset Mode" class="MainMenuButton" />
+                        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="clear_screen" text="Clear Screen" class="MainMenuButton" style="border-left-color: rgb(241, 73, 21); border-right-color: rgb(241, 73, 21); border-top-color: rgb(241, 73, 21); border-bottom-color: rgb(241, 73, 21);" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="footer" style="flex-grow: 1; width: 100%; height: 5%;">

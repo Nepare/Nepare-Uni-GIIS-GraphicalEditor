@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.VisualScripting;
-using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
+using System.Linq; 
+using System.Linq.Expressions;
 
 public class GameController : MonoBehaviour
 {
@@ -22,12 +22,26 @@ public class GameController : MonoBehaviour
         Bezier,
         Bspline
     }
+
+    public struct Cube
+    {
+        public float theta;
+        public int x, y, z;
+        public (int x, int y) startCoords;
+        public List<List<int>> vertices;
+        public List<List<int>> edges;
+        public bool isMoving, isRotating, isScaling, isPerspective, isDisplaying;
+    }
+
+
     public static Mode mode = Mode.None;
 
     public GameObject pixel, matrixObject; 
     private static PixelController[,] matrix;
     private static List<GameObject> selectedPixels = new List<GameObject>();
     private static int BSplineParameter = 4;
+
+    private static Cube cube;
 
     private const int WIDTH = 192, HEIGHT = 144;
 
@@ -220,7 +234,8 @@ public class GameController : MonoBehaviour
     {
         float x = x1, y = y1;
         int deltaX = Mathf.Abs(x2 - x1), deltaY = Mathf.Abs(y2 - y1);
-        float e = deltaY / deltaX - 0.5f;
+        float e = 0f;
+        try { e = deltaY / deltaX - 0.5f; } catch {}
         float changeX = (x1 < x2) ? 1f : -1f;
         float changeY = (y1 < y2) ? 1f : -1f;
 
@@ -579,7 +594,184 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public static void SpawnCube()
+    {
+        cube.vertices = TextFileProcessor.GetVertices();
+        cube.edges = TextFileProcessor.GetEdges();
+        cube.x = 0;
+        cube.y = 0;
+        cube.z = 0;
+        cube.startCoords = (0, 0);
+        cube.isMoving = false;
+        cube.isRotating = false;
+        cube.isScaling = false;
+        cube.isPerspective = false;
+        cube.isDisplaying = false;
+
+        RenderCube();
+    }
+
+    private static List<List<int>> CompleteOperations(float theta, int x, int y, int z)
+    {
+        if (cube.isMoving)
+        {
+            for (int i = 0; i < cube.vertices.Count; i++)
+            {
+                cube.vertices[i][0] += x;
+                cube.vertices[i][1] += y;
+                cube.vertices[i][2] += z;
+            }
+            return cube.vertices;
+        }
+        else if (cube.isScaling)
+        {
+            float scaleFactor = 1f + theta;
+            if (scaleFactor < 0.1f) scaleFactor = 0.1f;
+            List<List<int>> vertices = new();
+            vertices = ScaleFigure(scaleFactor);
+            return vertices;
+        }
+        else if (cube.isRotating)
+        {
+            return RotateCube(theta, x, y, z);
+        }
+        else if (cube.isDisplaying)
+        {
+            return null;
+        }
+        else return cube.vertices;
+    }
+
+    private static List<List<int>> ScaleFigure(float scaleFactor)
+    {
+        List<List<int>> scaledVertices = new();
+        foreach (var vertex in cube.vertices)
+        {
+            List<int> scaledVertex = new();
+            for (int i = 0; i < 3; i++)
+                scaledVertex.Add(Convert.ToInt32(vertex[i] * scaleFactor));
+            scaledVertices.Add(scaledVertex);
+        }
+
+        cube.vertices = scaledVertices;
+        return scaledVertices;
+    }
+
+    private static List<List<int>> RotateCube(float theta, int x, int y, int z)
+    {
+        List<List<int>> centeredVertices = new();
+        List<List<int>> rotatedVertices = new();
+        foreach (var vertex in cube.vertices)
+        {
+            centeredVertices.Add(new List<int>() { vertex[0] - 25, vertex[1] - 25, vertex[2] - 25 });
+        }
+        foreach (var vertex in centeredVertices)
+        {
+            var rotatedVertex = vertex.ToArray();
+            if (x != 0)
+            {
+                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateX(theta));
+                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+            }
+            if (y != 0)
+            {
+                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateY(theta));
+                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+            }
+            if (z != 0)
+            {
+                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateZ(theta));
+                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+            }
+            rotatedVertices.Add(rotatedVertex.ToList());
+        }
+        List<List<int>> returnedVertices = new();
+        foreach (var vertex in rotatedVertices)
+        {
+            returnedVertices.Add(new List<int>() { vertex[0] + 25, vertex[1] + 25, vertex[2] + 25 });
+        }
+        cube.vertices = returnedVertices;
+        return returnedVertices;
+    }
+
+    private static float[,] RotateX(float theta)
+    {
+        float[,] result = new float[3, 3] 
+        { 
+            { 1,                0,                0},
+            { 0,  math.cos(theta), -math.sin(theta)},
+            { 0,  math.sin(theta),  math.cos(theta)}
+        };
+        return result;
+    }
+
+    private static float[,] RotateY(float theta)
+    {
+        float[,] result = new float[3, 3] 
+        { 
+            { math.cos(theta),               0,  math.sin(theta)},
+            {               0,               1,                0},
+            {-math.sin(theta),               0,  math.cos(theta)}
+        };
+        return result;
+    }
+
+    private static float[,] RotateZ(float theta)
+    {
+        float[,] result = new float[3, 3] 
+        { 
+            { math.cos(theta), -math.sin(theta),                0},
+            { math.sin(theta),  math.cos(theta),                0},
+            {               0,                0,                1}
+        };
+        return result;
+    }
+
 // UTILITY FUNCTIONS
+
+    public static void RenderCube()
+    {        
+        if (cube.isPerspective)
+        {
+            // cube.vertices = self.perspective_transform(self.vertices, 500)
+            for (int i = 0; i < 4; i++)
+            {
+                // Debug.DrawLine(vertices[i][0] + 250, vertices[i][1] + 250, vertices[(i + 1) % 4][0] + 250, vertices[(i + 1) % 4][1] + 250);
+                // self.canvas.create_line(vertices[i + 4][0] + 250, vertices[i + 4][1] + 250, vertices[((i + 1) % 4) + 4][0] + 250, vertices[((i + 1) % 4) + 4][1] + 250);
+                // self.canvas.create_line(vertices[i][0] + 250, vertices[i][1] + 250, vertices[i + 4][0] + 250, vertices[i + 4][1] + 250);
+            }
+        }
+        else
+        {
+            cube.vertices = CompleteOperations(cube.theta, cube.x, cube.y, cube.z);
+
+            foreach (var edge in cube.edges)
+            {
+                int x1 = cube.vertices[edge[0]][0];
+                int y1 = cube.vertices[edge[0]][1];
+
+                int x2 = cube.vertices[edge[1]][0];
+                int y2 = cube.vertices[edge[1]][1];
+                DrawBresenham(x1, y1, x2, y2);
+            }
+        }
+}
+
+    public static void SendValues(bool moving, bool rotating, bool scaling, bool perspective, bool display, int x, int y, int z)
+    {
+        cube.isMoving = moving;
+        cube.isRotating = rotating;
+        cube.isScaling = scaling;
+        cube.isPerspective = perspective;
+        cube.isDisplaying = display;
+        cube.x = x;
+        cube.y = y;
+        cube.z = z;
+        cube.theta = math.radians(cube.x + cube.y + cube.z);
+    }
 
     private static int FindRadius(int x1, int y1, int x2, int y2)
     {
