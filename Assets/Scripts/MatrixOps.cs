@@ -70,7 +70,7 @@ public class MatrixOps : MonoBehaviour
         }
     }
 
-    public static float[,] MultiplyDoubleInverse(int[,] A, float[,] B)
+    public static float[,] MultiplyDoubleInverse(float[,] A, float[,] B)
     {
         int rA = A.GetLength(0);
         int cA = A.GetLength(1);

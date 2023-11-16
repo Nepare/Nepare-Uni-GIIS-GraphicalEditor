@@ -9,14 +9,14 @@ public class TextFileProcessor
 {
     private static string path = "Assets/Resources/cube.txt";
 
-    public static List<List<int>> GetVertices()
+    public static List<List<float>> GetVertices()
     {
-        List<List<int>> vertices = new List<List<int>>();
+        List<List<float>> vertices = new List<List<float>>();
         StreamReader reader = new StreamReader(path);
         for (int i = 0; i < 8; i++)
         {
-            List<int> vertex = new List<int>();
-            vertex = reader.ReadLine().Split(" ").Select(s => int.Parse(s)).ToList();
+            List<float> vertex = new List<float>();
+            vertex = reader.ReadLine().Split(" ").Select(s => float.Parse(s)).ToList();
             vertices.Add(vertex);
         }
         reader.Close();

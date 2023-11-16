@@ -26,9 +26,9 @@ public class GameController : MonoBehaviour
     public struct Cube
     {
         public float theta;
-        public int x, y, z;
+        public float x, y, z;
         public (int x, int y) startCoords;
-        public List<List<int>> vertices;
+        public List<List<float>> vertices;
         public List<List<int>> edges;
         public bool isMoving, isRotating, isScaling, isPerspective, isDisplaying;
     }
@@ -611,7 +611,7 @@ public class GameController : MonoBehaviour
         RenderCube();
     }
 
-    private static List<List<int>> CompleteOperations(float theta, int x, int y, int z)
+    private static List<List<float>> CompleteOperations(float theta, float x, float y, float z)
     {
         if (cube.isMoving)
         {
@@ -627,7 +627,7 @@ public class GameController : MonoBehaviour
         {
             float scaleFactor = 1f + theta;
             if (scaleFactor < 0.1f) scaleFactor = 0.1f;
-            List<List<int>> vertices = new();
+            List<List<float>> vertices = new();
             vertices = ScaleFigure(scaleFactor);
             return vertices;
         }
@@ -642,14 +642,14 @@ public class GameController : MonoBehaviour
         else return cube.vertices;
     }
 
-    private static List<List<int>> ScaleFigure(float scaleFactor)
+    private static List<List<float>> ScaleFigure(float scaleFactor)
     {
-        List<List<int>> scaledVertices = new();
+        List<List<float>> scaledVertices = new();
         foreach (var vertex in cube.vertices)
         {
-            List<int> scaledVertex = new();
+            List<float> scaledVertex = new();
             for (int i = 0; i < 3; i++)
-                scaledVertex.Add(Convert.ToInt32(vertex[i] * scaleFactor));
+                scaledVertex.Add(vertex[i] * scaleFactor);
             scaledVertices.Add(scaledVertex);
         }
 
@@ -657,41 +657,41 @@ public class GameController : MonoBehaviour
         return scaledVertices;
     }
 
-    private static List<List<int>> RotateCube(float theta, int x, int y, int z)
+    private static List<List<float>> RotateCube(float theta, float x, float y, float z)
     {
-        List<List<int>> centeredVertices = new();
-        List<List<int>> rotatedVertices = new();
+        List<List<float>> centeredVertices = new();
+        List<List<float>> rotatedVertices = new();
         foreach (var vertex in cube.vertices)
         {
-            centeredVertices.Add(new List<int>() { vertex[0] - 25, vertex[1] - 25, vertex[2] - 25 });
+            centeredVertices.Add(new List<float>() { vertex[0] - 25, vertex[1] - 25, vertex[2] - 25 });
         }
         foreach (var vertex in centeredVertices)
         {
             var rotatedVertex = vertex.ToArray();
             if (x != 0)
             {
-                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                float[,] rotatedVertexMultidimensional = new float[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
                 var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateX(theta));
-                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+                rotatedVertex = new float[3] { rotatedVertexFloat[0, 0], rotatedVertexFloat[0, 1], rotatedVertexFloat[0, 2] };
             }
             if (y != 0)
             {
-                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                float[,] rotatedVertexMultidimensional = new float[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
                 var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateY(theta));
-                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+                rotatedVertex = new float[3] { rotatedVertexFloat[0, 0], rotatedVertexFloat[0, 1], rotatedVertexFloat[0, 2] };
             }
             if (z != 0)
             {
-                int[,] rotatedVertexMultidimensional = new int[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
+                float[,] rotatedVertexMultidimensional = new float[1, 3] { { rotatedVertex[0], rotatedVertex[1], rotatedVertex[2] } };
                 var rotatedVertexFloat = MatrixOps.MultiplyDoubleInverse(rotatedVertexMultidimensional, RotateZ(theta));
-                rotatedVertex = new int[3] { Convert.ToInt32(rotatedVertexFloat[0, 0]), Convert.ToInt32(rotatedVertexFloat[0, 1]), Convert.ToInt32(rotatedVertexFloat[0, 2]) };
+                rotatedVertex = new float[3] { rotatedVertexFloat[0, 0], rotatedVertexFloat[0, 1], rotatedVertexFloat[0, 2] };
             }
             rotatedVertices.Add(rotatedVertex.ToList());
         }
-        List<List<int>> returnedVertices = new();
+        List<List<float>> returnedVertices = new();
         foreach (var vertex in rotatedVertices)
         {
-            returnedVertices.Add(new List<int>() { vertex[0] + 25, vertex[1] + 25, vertex[2] + 25 });
+            returnedVertices.Add(new List<float>() { vertex[0] + 25, vertex[1] + 25, vertex[2] + 25 });
         }
         cube.vertices = returnedVertices;
         return returnedVertices;
@@ -750,11 +750,11 @@ public class GameController : MonoBehaviour
 
             foreach (var edge in cube.edges)
             {
-                int x1 = cube.vertices[edge[0]][0];
-                int y1 = cube.vertices[edge[0]][1];
+                int x1 = Convert.ToInt32(cube.vertices[edge[0]][0]);
+                int y1 = Convert.ToInt32(cube.vertices[edge[0]][1]);
 
-                int x2 = cube.vertices[edge[1]][0];
-                int y2 = cube.vertices[edge[1]][1];
+                int x2 = Convert.ToInt32(cube.vertices[edge[1]][0]);
+                int y2 = Convert.ToInt32(cube.vertices[edge[1]][1]);
                 DrawBresenham(x1, y1, x2, y2);
             }
         }
