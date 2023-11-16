@@ -208,7 +208,6 @@ public class UIController : MonoBehaviour
     private void Reset3D()
     {
         GameController.mode = GameController.Mode.None;
-        x = 0; y = 0; z = 0;
         GameController.ClearSelectedPixels();
     }
 

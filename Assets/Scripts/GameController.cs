@@ -637,7 +637,8 @@ public class GameController : MonoBehaviour
         }
         else if (cube.isDisplaying)
         {
-            return null;
+            cube.vertices = RotateForDisplay(theta, 1, 0, 0);
+            return cube.vertices;
         }
         else return cube.vertices;
     }
@@ -730,18 +731,68 @@ public class GameController : MonoBehaviour
         return result;
     }
 
+    private static List<List<float>> RotateForDisplay(float angle, float axisX, float axisY, float axisZ)
+    {
+        float angle_rad = math.radians(angle);
+        float[] axis_rad = new float[3] { math.radians(axisX), math.radians(axisY), math.radians(axisZ) };
+        
+        float[,] rotation_matrix = new float[3, 3] {
+            {math.cos(angle_rad) + math.pow(axis_rad[0], 2) * (1 - math.cos(angle_rad)),
+             axis_rad[0] * axis_rad[1] * (1 - math.cos(angle_rad)) - axis_rad[2] * math.sin(angle_rad),
+             axis_rad[0] * axis_rad[2] * (1 - math.cos(angle_rad)) + axis_rad[1] * math.sin(angle_rad)},
+
+            {axis_rad[1] * axis_rad[0] * (1 - math.cos(angle_rad)) + axis_rad[2] * math.sin(angle_rad),
+             math.cos(angle_rad) + math.pow(axis_rad[1], 2) * (1 - math.cos(angle_rad)),
+             axis_rad[1] * axis_rad[2] * (1 - math.cos(angle_rad)) - axis_rad[0] * math.sin(angle_rad)},
+
+            {axis_rad[2] * axis_rad[0] * (1 - math.cos(angle_rad)) - axis_rad[1] * math.sin(angle_rad),
+             axis_rad[2] * axis_rad[1] * (1 - math.cos(angle_rad)) + axis_rad[0] * math.sin(angle_rad),
+             math.cos(angle_rad) + math.pow(axis_rad[2], 2) * (1 - math.cos(angle_rad))}
+        };
+        List<List<float>> rotatedVertices = new();
+        foreach (var vertex in cube.vertices)
+        {
+            List<float> rotatedVertex = new() {0, 0, 0};
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    rotatedVertex[i] += rotation_matrix[i, j] * vertex[j];
+                }
+            }
+            rotatedVertices.Add(rotatedVertex);
+        }
+        return rotatedVertices;
+    }
+
+    private static List<List<float>> PerspectiveTransform(List<List<float>> coords, float distance)
+    {
+        List<List<float>> transformed_coords = new();
+        foreach (var coord in coords)
+        {
+            float x = coord[0];
+            float y = coord[1];
+            float z = coord[2];
+            float transformedX = x * distance / (z + distance);
+            float transformedY = y * distance / (z + distance);
+            transformed_coords.Add(new List<float>() { transformedX, transformedY });
+        }
+
+        return transformed_coords;
+    }
+
 // UTILITY FUNCTIONS
 
     public static void RenderCube()
     {        
         if (cube.isPerspective)
         {
-            // cube.vertices = self.perspective_transform(self.vertices, 500)
+            cube.vertices = PerspectiveTransform(cube.vertices, 500);
             for (int i = 0; i < 4; i++)
             {
-                // Debug.DrawLine(vertices[i][0] + 250, vertices[i][1] + 250, vertices[(i + 1) % 4][0] + 250, vertices[(i + 1) % 4][1] + 250);
-                // self.canvas.create_line(vertices[i + 4][0] + 250, vertices[i + 4][1] + 250, vertices[((i + 1) % 4) + 4][0] + 250, vertices[((i + 1) % 4) + 4][1] + 250);
-                // self.canvas.create_line(vertices[i][0] + 250, vertices[i][1] + 250, vertices[i + 4][0] + 250, vertices[i + 4][1] + 250);
+                DrawBresenham(Convert.ToInt32(cube.vertices[i][0]), Convert.ToInt32(cube.vertices[i][1]), Convert.ToInt32(cube.vertices[(i + 1) % 4][0]), Convert.ToInt32(cube.vertices[(i + 1) % 4][1]));
+                DrawBresenham(Convert.ToInt32(cube.vertices[i + 4][0]), Convert.ToInt32(cube.vertices[i + 4][1]), Convert.ToInt32(cube.vertices[((i + 1) % 4) + 4][0]), Convert.ToInt32(cube.vertices[((i + 1) % 4) + 4][1]));
+                DrawBresenham(Convert.ToInt32(cube.vertices[i][0]), Convert.ToInt32(cube.vertices[i][1]), Convert.ToInt32(cube.vertices[i + 4][0]), Convert.ToInt32(cube.vertices[i + 4][1]));
             }
         }
         else
