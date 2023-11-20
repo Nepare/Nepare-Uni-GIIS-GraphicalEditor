@@ -62,7 +62,7 @@ public class UIController : MonoBehaviour
         btnReflect.clicked += ReflectCube;
         
         btnReset.clicked += Reset;
-        btnClearScreen.clicked += ClearScreen;
+        btnClearScreen.clicked += EventManager.SendClearScreen;
 
         txtBoxBezierParameter.RegisterValueChangedCallback(evt => 
         {
@@ -160,59 +160,59 @@ public class UIController : MonoBehaviour
         Reset3D();
         ClearScreen();
         is3DActive = true;
-        GameController.SpawnCube();
+        EventManager.SendSpawnCube();
     }
 
     private void MoveCube()
     {
         ClearScreen();
-        GameController.SendValues(true, false, false, false, false, x, y, z);
-        GameController.RenderCube();
+        EventManager.SendCubeValues(true, false, false, false, false, x, y, z);
+        EventManager.SendRenderCube();
     }
 
     private void RotateCube()
     {
         ClearScreen();
-        GameController.SendValues(false, true, false, false, false, x, y, z);
-        GameController.RenderCube();
+        EventManager.SendCubeValues(false, true, false, false, false, x, y, z);
+        EventManager.SendRenderCube();
     }
 
     private void ScaleCube()
     {
         ClearScreen();
-        GameController.SendValues(false, false, true, false, false, x, y, z);
-        GameController.RenderCube();
+        EventManager.SendCubeValues(false, false, true, false, false, x, y, z);
+        EventManager.SendRenderCube();
     }
 
     private void PerspectCube()
     {
         ClearScreen();
-        GameController.SendValues(false, false, false, true, false, x, y, z);
-        GameController.RenderCube();
+        EventManager.SendCubeValues(false, false, false, true, false, x, y, z);
+        EventManager.SendRenderCube();
     }
 
     private void ReflectCube()
     {
         ClearScreen();
-        GameController.SendValues(false, false, false, false, true, x, y, z);
-        GameController.RenderCube();
+        EventManager.SendCubeValues(false, false, false, false, true, x, y, z);
+        EventManager.SendRenderCube();
     }
 
     private void Reset()
     {
         GameController.mode = GameController.Mode.None;
         is3DActive = false;
-        GameController.ClearSelectedPixels();
+        EventManager.SendClearSelectedPixels();
     }
 
     private void Reset3D()
     {
         GameController.mode = GameController.Mode.None;
-        GameController.ClearSelectedPixels();
+        EventManager.SendClearSelectedPixels();
     }
 
     private void ClearScreen()
     {
-        GameController.ClearScreen();
+        EventManager.SendClearScreen();
     }
 }

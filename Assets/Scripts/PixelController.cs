@@ -29,6 +29,11 @@ public class PixelController : MonoBehaviour
         spite_renderer.color = new_color;
     }
 
+    public void ChangeColor(Color color)
+    {
+        spite_renderer.color = color;
+    }
+
     public void ChangeToWhite()
     {
         spite_renderer.color = Color.white;
