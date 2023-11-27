@@ -17,7 +17,11 @@ public class GameController : MonoBehaviour
         Hyperbola,
         Hermite,
         Bezier,
-        Bspline
+        Bspline,
+        Scanline,
+        ScanlineActive,
+        Floodfill,
+        FloodfillString
     }
 
     public static Mode mode = Mode.None;
@@ -25,14 +29,15 @@ public class GameController : MonoBehaviour
     public GameObject pixel, matrixObject; 
     private static PixelController[,] matrix;
     private static List<GameObject> selectedPixels = new List<GameObject>();
-    private static int BSplineParameter = 4;
+    private static int BSplineParameter = 4, scanlineParameter = 4;
 
-    private const int WIDTH = 192, HEIGHT = 144;
+    public const int WIDTH = 192, HEIGHT = 144;
 
     private void Awake()
     {
         FillMatrix(WIDTH, HEIGHT);
         EventManager.OnBSplineParameterChanged += ChangeBSplineParameter;
+        EventManager.OnScanlineParameterChanged += ChangeScanlineParameter;
         EventManager.OnClearScreen += ClearScreen;
         EventManager.OnClearSelectedPixels += ClearSelectedPixels;
 
@@ -45,6 +50,13 @@ public class GameController : MonoBehaviour
         BSplineParameter = newParam;
         Debug.Log("New BSpline parameter = " + newParam.ToString());
     }
+
+    private void ChangeScanlineParameter(int newParam)
+    {
+        scanlineParameter = newParam;
+        Debug.Log("New scanline parameter = " + newParam.ToString());
+    }
+
 
     private void FillMatrix(int width, int height)
     {   
@@ -182,6 +194,43 @@ public class GameController : MonoBehaviour
                 selectedPixels.Clear();
             }
         }
+        if (mode >= Mode.Scanline && mode <= Mode.ScanlineActive)
+        {
+            if (selectedPixels.Count < scanlineParameter)
+            {
+                selectedPixels.Add(selected_pixel);
+                selected_pixel.GetComponent<PixelController>().ChangeColor(255, true);
+            }
+            if (selectedPixels.Count == scanlineParameter)
+            {
+                int[] x_arr = new int[scanlineParameter];
+                int[] y_arr = new int[scanlineParameter];
+                for (int i = 0; i < scanlineParameter; i++)
+                {
+                    x_arr[i] = selectedPixels[i].GetComponent<PixelController>().x;
+                    y_arr[i] = selectedPixels[i].GetComponent<PixelController>().y;
+                }
+                ClearSelectedPixels();
+                if (mode == Mode.Scanline) 
+                {
+                    FillPolygon.DrawPolygonScanline(x_arr, y_arr);
+                    Debug.Log("Filling polygon using scanline!");
+                }
+                if (mode == Mode.ScanlineActive) 
+                {
+                    FillPolygon.DrawPolygonScanlineActive(x_arr, y_arr);
+                    Debug.Log("Filling polygon using scanline with active edges!");
+                }
+                selectedPixels.Clear();
+            }
+        }
+        if (mode >= Mode.Floodfill && mode <= Mode.FloodfillString)
+        {
+            int x = selected_pixel.GetComponent<PixelController>().x;
+            int y = selected_pixel.GetComponent<PixelController>().y;
+            FillPolygon.Floodfill(x, y);
+            Debug.Log("Floodfilling in (" + x.ToString() + ";" + y.ToString() + ")!");
+        }
     }
 
 // UTILITY FUNCTIONS
@@ -190,7 +239,7 @@ public class GameController : MonoBehaviour
     {
         for (int i = 0; i < selectedPixels.Count; i++)
         {
-            selectedPixels[i].GetComponent<PixelController>().ChangeColor(0, false);
+            selectedPixels[i].GetComponent<PixelController>().ChangeToWhite();
         }
         selectedPixels.Clear();
     }
@@ -222,5 +271,10 @@ public class GameController : MonoBehaviour
     {
         if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
             matrix[Convert.ToInt32(Mathf.Floor(x)), Convert.ToInt32(Mathf.Floor(y))].ChangeColor(color);
+    }
+
+    public static bool CheckPixelFill(int x, int y)
+    {
+        return matrix[x, y].IsFilled();
     }
 }

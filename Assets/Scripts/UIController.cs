@@ -8,7 +8,6 @@ public class UIController : MonoBehaviour
 {
     private VisualElement root;
     private Label coordinates_label;
-    private bool is3DActive = false;
     private int x = 0, y = 0, z = 0;
 
     private void OnEnable() {
@@ -26,6 +25,10 @@ public class UIController : MonoBehaviour
         Button btnBezier = root.Q<Button>("bezier_mode");
         Button btnBSpline = root.Q<Button>("bspline_mode");
         Button btnSpawnCube = root.Q<Button>("spawn_cube");
+        Button btnScanline = root.Q<Button>("scanline");
+        Button btnScanlineActive = root.Q<Button>("scanline_active");
+        Button btnFloodlill = root.Q<Button>("floodfill");
+        Button btnFloodlillString = root.Q<Button>("floodfill_string");
         
         Button btnRotate = root.Q<Button>("Rotate");
         Button btnMove = root.Q<Button>("Move");
@@ -33,11 +36,11 @@ public class UIController : MonoBehaviour
         Button btnPerspect = root.Q<Button>("Perspect");
         Button btnReflect = root.Q<Button>("Reflect");
 
-
         Button btnClearScreen = root.Q<Button>("clear_screen");
         Button btnReset = root.Q<Button>("reset_mode");
 
         TextField txtBoxBezierParameter = root.Q<TextField>("txtBoxBezierParameter");
+        TextField txtBoxScanlineParameter = root.Q<TextField>("txtboxCorners");
 
         TextField txtBoxX = root.Q<TextField>("txtboxX");
         TextField txtBoxY = root.Q<TextField>("txtboxY");
@@ -53,6 +56,10 @@ public class UIController : MonoBehaviour
         btnHermite.clicked += SelectHermite;
         btnBezier.clicked += SelectBezier;
         btnBSpline.clicked += SelectBSpline;
+        btnScanline.clicked += SelectScanline;
+        btnScanlineActive.clicked += SelectScanlineActive;
+        btnFloodlill.clicked += SelectFloodfill;
+        btnFloodlillString.clicked += SelectFloodfillString;
         
         btnSpawnCube.clicked += SpawnCube;
         btnMove.clicked += MoveCube;
@@ -66,10 +73,16 @@ public class UIController : MonoBehaviour
 
         txtBoxBezierParameter.RegisterValueChangedCallback(evt => 
         {
-            try { Convert.ToInt32(txtBoxBezierParameter.value); }
-            catch { return; }
+            try { Convert.ToInt32(txtBoxBezierParameter.value); } catch { return; }
             if (Convert.ToInt32(txtBoxBezierParameter.value) >= 4)
                 EventManager.SendBSplineParameterChanged(Convert.ToInt32(txtBoxBezierParameter.value));
+        });
+
+        txtBoxScanlineParameter.RegisterValueChangedCallback(evt => 
+        {
+            try { Convert.ToInt32(txtBoxScanlineParameter.value); } catch { return; }
+            if (Convert.ToInt32(txtBoxScanlineParameter.value) >= 3)
+                EventManager.SendScanlineParameterChanged(Convert.ToInt32(txtBoxScanlineParameter.value));
         });
 
         txtBoxX.RegisterValueChangedCallback(evt => 
@@ -159,7 +172,6 @@ public class UIController : MonoBehaviour
     {
         Reset3D();
         ClearScreen();
-        is3DActive = true;
         EventManager.SendSpawnCube();
     }
 
@@ -198,10 +210,33 @@ public class UIController : MonoBehaviour
         EventManager.SendRenderCube();
     }
 
+    private void SelectScanline()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.Scanline;
+    }
+
+    private void SelectScanlineActive()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.ScanlineActive;
+    }
+
+    private void SelectFloodfill()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.Floodfill;
+    }
+
+    private void SelectFloodfillString()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.FloodfillString;
+    }
+
     private void Reset()
     {
         GameController.mode = GameController.Mode.None;
-        is3DActive = false;
         EventManager.SendClearSelectedPixels();
     }
 
