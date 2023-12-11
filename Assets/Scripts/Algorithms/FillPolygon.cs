@@ -134,7 +134,7 @@ public class FillPolygon
             {
                 if (!GameController.CheckPixelFill(a.x, a.y))
                 {
-                    GameController.PlotAlpha(0.3f, a.x, a.y);
+                    GameController.PlotColor(a.x, a.y, Color.red);
                     pixels.Push((a.x - 1, a.y));
                     pixels.Push((a.x + 1, a.y));
                     pixels.Push((a.x, a.y - 1));

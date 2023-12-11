@@ -21,7 +21,9 @@ public class GameController : MonoBehaviour
         Scanline,
         ScanlineActive,
         Floodfill,
-        FloodfillString
+        FloodfillString,
+        Delaunay,
+        Voronov
     }
 
     public static Mode mode = Mode.None;
@@ -29,7 +31,7 @@ public class GameController : MonoBehaviour
     public GameObject pixel, matrixObject; 
     private static PixelController[,] matrix;
     private static List<GameObject> selectedPixels = new List<GameObject>();
-    private static int BSplineParameter = 4, scanlineParameter = 4;
+    private static int BSplineParameter = 4, scanlineParameter = 4, triangulationParameter = 3;
 
     public const int WIDTH = 192, HEIGHT = 144;
 
@@ -38,6 +40,7 @@ public class GameController : MonoBehaviour
         FillMatrix(WIDTH, HEIGHT);
         EventManager.OnBSplineParameterChanged += ChangeBSplineParameter;
         EventManager.OnScanlineParameterChanged += ChangeScanlineParameter;
+        EventManager.OnTriangulationParameterChanged += ChangeTriangulationParameter;
         EventManager.OnClearScreen += ClearScreen;
         EventManager.OnClearSelectedPixels += ClearSelectedPixels;
 
@@ -57,6 +60,11 @@ public class GameController : MonoBehaviour
         Debug.Log("New scanline parameter = " + newParam.ToString());
     }
 
+    private void ChangeTriangulationParameter(int newParam)
+    {
+        triangulationParameter = newParam;
+        Debug.Log("New triangulation parameter = " + newParam.ToString());
+    }
 
     private void FillMatrix(int width, int height)
     {   
@@ -230,6 +238,36 @@ public class GameController : MonoBehaviour
             int y = selected_pixel.GetComponent<PixelController>().y;
             FillPolygon.Floodfill(x, y);
             Debug.Log("Floodfilling in (" + x.ToString() + ";" + y.ToString() + ")!");
+        }
+        if (mode >= Mode.Delaunay && mode <= Mode.Voronov)
+        {
+            if (selectedPixels.Count < triangulationParameter)
+            {
+                selectedPixels.Add(selected_pixel);
+                selected_pixel.GetComponent<PixelController>().ChangeColor(255, true);
+            }
+            if (selectedPixels.Count == triangulationParameter)
+            {
+                int[] x_arr = new int[triangulationParameter];
+                int[] y_arr = new int[triangulationParameter];
+                for (int i = 0; i < triangulationParameter; i++)
+                {
+                    x_arr[i] = selectedPixels[i].GetComponent<PixelController>().x;
+                    y_arr[i] = selectedPixels[i].GetComponent<PixelController>().y;
+                }
+                ClearSelectedPixels();
+                if (mode == Mode.Delaunay) 
+                {
+                    Triangulation.TriangulateDelaunay(x_arr, y_arr);
+                    Debug.Log("Triangulating using Delaunay method!");
+                }
+                if (mode == Mode.Voronov) 
+                {
+                    Triangulation.CreateVoronoiDiagram(x_arr, y_arr);
+                    Debug.Log("Creating a Voronov diagram!");
+                }
+                selectedPixels.Clear();
+            }
         }
     }
 

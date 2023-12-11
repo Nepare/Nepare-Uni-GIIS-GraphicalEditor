@@ -29,6 +29,8 @@ public class UIController : MonoBehaviour
         Button btnScanlineActive = root.Q<Button>("scanline_active");
         Button btnFloodlill = root.Q<Button>("floodfill");
         Button btnFloodlillString = root.Q<Button>("floodfill_string");
+        Button btnDelaunay = root.Q<Button>("delaunay");
+        Button btnVoronov = root.Q<Button>("voronov");
         
         Button btnRotate = root.Q<Button>("Rotate");
         Button btnMove = root.Q<Button>("Move");
@@ -41,6 +43,7 @@ public class UIController : MonoBehaviour
 
         TextField txtBoxBezierParameter = root.Q<TextField>("txtBoxBezierParameter");
         TextField txtBoxScanlineParameter = root.Q<TextField>("txtboxCorners");
+        TextField txtBoxTriangulationPoints = root.Q<TextField>("txtboxPoints");
 
         TextField txtBoxX = root.Q<TextField>("txtboxX");
         TextField txtBoxY = root.Q<TextField>("txtboxY");
@@ -60,6 +63,8 @@ public class UIController : MonoBehaviour
         btnScanlineActive.clicked += SelectScanlineActive;
         btnFloodlill.clicked += SelectFloodfill;
         btnFloodlillString.clicked += SelectFloodfillString;
+        btnDelaunay.clicked += SelectDelaunay;
+        btnVoronov.clicked += SelectVoronov;
         
         btnSpawnCube.clicked += SpawnCube;
         btnMove.clicked += MoveCube;
@@ -83,6 +88,13 @@ public class UIController : MonoBehaviour
             try { Convert.ToInt32(txtBoxScanlineParameter.value); } catch { return; }
             if (Convert.ToInt32(txtBoxScanlineParameter.value) >= 3)
                 EventManager.SendScanlineParameterChanged(Convert.ToInt32(txtBoxScanlineParameter.value));
+        });
+
+        txtBoxTriangulationPoints.RegisterValueChangedCallback(evt => 
+        {
+            try { Convert.ToInt32(txtBoxTriangulationPoints.value); } catch { return; }
+            if (Convert.ToInt32(txtBoxTriangulationPoints.value) >= 3)
+                EventManager.SendTriangulationParameterChanged(Convert.ToInt32(txtBoxTriangulationPoints.value));
         });
 
         txtBoxX.RegisterValueChangedCallback(evt => 
@@ -232,6 +244,18 @@ public class UIController : MonoBehaviour
     {
         Reset();
         GameController.mode = GameController.Mode.FloodfillString;
+    }
+
+    private void SelectDelaunay()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.Delaunay;
+    }
+
+    private void SelectVoronov()
+    {
+        Reset();
+        GameController.mode = GameController.Mode.Voronov;
     }
 
     private void Reset()

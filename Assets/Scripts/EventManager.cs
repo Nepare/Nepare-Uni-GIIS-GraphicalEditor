@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class EventManager : MonoBehaviour
 {
-    public static Action<int> OnBSplineParameterChanged, OnScanlineParameterChanged;
+    public static Action<int> OnBSplineParameterChanged, OnScanlineParameterChanged, OnTriangulationParameterChanged;
     public static Action OnRenderCube, OnSpawnCube, OnClearScreen, OnClearSelectedPixels;
     public static Action<bool, bool, bool, bool, bool, int, int, int> OnCubeValues;
 
@@ -19,6 +19,12 @@ public class EventManager : MonoBehaviour
     {
         if (OnScanlineParameterChanged != null)
             OnScanlineParameterChanged.Invoke(param);
+    }
+    
+    public static void SendTriangulationParameterChanged(int param)
+    {
+        if (OnTriangulationParameterChanged != null)
+            OnTriangulationParameterChanged.Invoke(param);
     }
 
     public static void SendRenderCube()
